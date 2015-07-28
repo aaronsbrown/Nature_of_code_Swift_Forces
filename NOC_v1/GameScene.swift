@@ -9,37 +9,59 @@
 import SpriteKit
 
 class GameScene: SKScene {
+    
+    let NumVehicles = 20
+    let worldNode = SKNode()
+    var vehicles = [Vehicle]()
+    
     override func didMoveToView(view: SKView) {
-        /* Setup your scene here */
-        let myLabel = SKLabelNode(fontNamed:"Chalkduster")
-        myLabel.text = "Hello, World!";
-        myLabel.fontSize = 65;
-        myLabel.position = CGPoint(x:CGRectGetMidX(self.frame), y:CGRectGetMidY(self.frame));
+
         
-        self.addChild(myLabel)
+        backgroundColor = SKColor.whiteColor()
+
+        addChild(worldNode)
+
+        for var index = 0; index < NumVehicles; index++ {
+            let xPos = Int.random( min: 0, max: Int(size.width) )
+            let yPos = Int.random( min: 0, max: Int(size.height) )
+            let mass = CGFloat(Int.random(min: 1, max: 5)) / CGFloat(Int.random(min: 2, max: 5))
+            var vehicle = Vehicle(scene: self, mass: mass, x: xPos, y: yPos)
+
+            println(mass)
+            vehicles.append(vehicle)
+            worldNode.addChild(vehicle)
+        }
     }
     
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
-        /* Called when a touch begins */
-        
-        for touch in (touches as! Set<UITouch>) {
-            let location = touch.locationInNode(self)
-            
-            let sprite = SKSpriteNode(imageNamed:"Spaceship")
-            
-            sprite.xScale = 0.5
-            sprite.yScale = 0.5
-            sprite.position = location
-            
-            let action = SKAction.rotateByAngle(CGFloat(M_PI), duration:1)
-            
-            sprite.runAction(SKAction.repeatActionForever(action))
-            
-            self.addChild(sprite)
+        for vehicle in vehicles {
+            vehicle.cycleBoundaryInteraction()
         }
     }
    
     override func update(currentTime: CFTimeInterval) {
-        /* Called before each frame is rendered */
+        
+        for vehicle in vehicles {
+            vehicle.applyForce(CGVector(dx: 10, dy: 0))
+            vehicle.applyForce(CGVector(dx: 0, dy: -100.0 * vehicle.mass ))
+            vehicle.update(currentTime)
+        }
     }
+    
+    func leftEdge() -> CGFloat {
+        return frame.minX
+    }
+    
+    func rightEdge() -> CGFloat {
+        return frame.maxX
+    }
+    
+    func topEdge() -> CGFloat {
+        return frame.maxY
+    }
+    
+    func bottomEdge() -> CGFloat {
+        return frame.minY
+    }
+
 }
